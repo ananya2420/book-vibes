@@ -3,7 +3,7 @@ import bookImg from "../../assets/hero_img.jpg"
 
 const Banner = () => {
   return (
-    <div>
+    <nav className='hero bg-base-200 min-h-[70vh] rounded-2xl my-8'>
         <div className="hero bg-base-200 min-h-[70vh] rounded-2xl my-8 container mx-auto">
   <div className="hero-content flex-col lg:flex-row-reverse w-full justify-between">
     <img
@@ -17,7 +17,7 @@ const Banner = () => {
     </div>
   </div>
 </div>
-    </div>
+    </nav>
   )
 }
 
