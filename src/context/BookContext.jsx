@@ -1,64 +1,63 @@
-import React, { createContext, useEffect, useState } from 'react'
-import { toast } from 'react-toastify';
+import React, { createContext, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 export const BookContext = createContext();
 
 const BookProvider = ({ children }) => {
-
-  const [storedBooks, setStoredBooks] = useState([]);
+  // ✅ State initialization
+  const [readList, setReadList] = useState([]);
   const [wishList, setWishList] = useState([]);
 
-  // ✅ Load from localStorage
+  // ✅ Load data from localStorage on first render
   useEffect(() => {
-    const readList = JSON.parse(localStorage.getItem("readList")) || [];
-    const wish = JSON.parse(localStorage.getItem("wishList")) || [];
+    const readListFromStorage = JSON.parse(localStorage.getItem("readList")) || [];
+    const wishListFromStorage = JSON.parse(localStorage.getItem("wishList")) || [];
 
-    setStoredBooks(readList);
-    setWishList(wish);
+    setReadList(readListFromStorage);
+    setWishList(wishListFromStorage);
   }, []);
 
-  // ✅ Save to localStorage
+  // ✅ Save readList to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("readList", JSON.stringify(storedBooks));
-  }, [storedBooks]);
+    localStorage.setItem("readList", JSON.stringify(readList));
+  }, [readList]);
 
+  // ✅ Save wishList to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("wishList", JSON.stringify(wishList));
   }, [wishList]);
 
-  // ✅ Add to Read List
+  // ✅ Add a book to Read List
   const handleMarkAsRead = (currentBook) => {
-    const isExistBook = storedBooks.find(
-      book => book.bookId === currentBook.bookId
-    );
-
+    // Prevent duplicates
+    const isExistBook = readList.find(book => book.bookId === currentBook.bookId);
     if (isExistBook) {
       toast.error("The book is already marked as read!");
       return;
     }
 
-    setStoredBooks([...storedBooks, currentBook]);
+    const newBookList = [...readList, currentBook];
+    setReadList(newBookList);
     toast.success(`${currentBook.bookName} added to Read List`);
+
+    // Optional: remove from wishlist if already there
+    const updatedWishList = wishList.filter(book => book.bookId !== currentBook.bookId);
+    setWishList(updatedWishList);
   };
 
-  // ✅ Add to Wishlist
+  // ✅ Add a book to Wishlist
   const handleWishList = (currentBook) => {
-
-    const isExistInReadList = storedBooks.find(
-      book => book.bookId === currentBook.bookId
-    );
-
+    // Prevent duplicates in Read List
+    const isExistInReadList = readList.find(book => book.bookId === currentBook.bookId);
     if (isExistInReadList) {
-      toast.error("Already in Read List");
+      toast.error("This book is already in Read List");
       return;
     }
 
-    const isExistBook = wishList.find(
-      book => book.bookId === currentBook.bookId
-    );
-
-    if (isExistBook) {
-      toast.error("Already in Wishlist");
+    // Prevent duplicates in Wishlist
+    const isExistInWishList = wishList.find(book => book.bookId === currentBook.bookId);
+    if (isExistInWishList) {
+      toast.error("This book is already in Wishlist");
       return;
     }
 
@@ -69,10 +68,12 @@ const BookProvider = ({ children }) => {
   return (
     <BookContext.Provider
       value={{
-        storedBooks,
+        readList,
+        setReadList,
         handleMarkAsRead,
         wishList,
-        handleWishList
+        setWishList,
+        handleWishList,
       }}
     >
       {children}
